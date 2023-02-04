@@ -35,7 +35,7 @@ class DiskUtils:
             logging.info("mounting "+source+" at "+destination+" with options "+" ".join(options))
             command = ["mount", partition, destination, "-o"]
             command.extend(options)
-            Command.execute_command(command=command, command_description="Mount "+source+" at "+destination+" with options "+" ".join(options))
+            Command.execute_command(command=command, command_description="Mount "+source+" at "+destination+" with options "+" ".join(options), check=True)
         elif bindmount and options == []:
             logging.info("bind mounting "+source+" to "+destination)
             Command.execute_command(command=["mount", "--bind", source, destination])
@@ -43,4 +43,16 @@ class DiskUtils:
             logging.info("bind mounting "+source+" to "+destination+" with options "+" ".join(options))
             command = ["mount", "--bind", partition, destination, "-o"]
             command.extend(options)
-            Command.execute_command(command=command, command_description="Bind mount "+source+" at "+destination+" with options "+" ".join(options))
+            Command.execute_command(command=command, command_description="Bind mount "+source+" at "+destination+" with options "+" ".join(options), check=True)
+
+    @staticmethod
+    def unmount(
+        mountpoint: str,
+    ):
+        Command.execute_command(command=["umount", mountopoint], command_description="Unmount "+mountpoint, check=True)
+
+
+    @staticmethod
+    def is_ssd(
+        disk: str,
+    ):

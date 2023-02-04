@@ -59,3 +59,6 @@ def setup_volumes(str: disk):
     Command.execute_command(command=["btrfs", "subvol", "create", "Recovery"], command_description="Create Recovery shard", crash=True, workdir="/mnt")
     Command.execute_command(command=["btrfs", "subvol", "create", "Desktop"], command_description="Create Desktop shard", crash=True, workdir="/mnt")
     Command.execute_command(command=["btrfs", "subvol", "create", "Users"], command_description="Create Users shard", crash=True, workdir="/mnt")
+    DiskUtils.unmount("/mnt")
+    DiskUtils.mount(source=partitions[1], destination="/mnt", options="subvol=Root")
+    logging.debug("Installing base Root shard")
