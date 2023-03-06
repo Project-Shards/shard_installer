@@ -25,4 +25,4 @@ sys.path.insert(1, pkgdatadir)
 
 if __name__ == '__main__':
     from shard_installer import main
-    sys.exit(main.main(sys.argv))
+    sys.exit(main.main())

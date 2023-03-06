@@ -20,3 +20,5 @@ shard_installer_sources = [
 ]
 
 install_data(shard_installer_sources, install_dir: moduledir)
+subdir('utils')
+subdir('funtions')

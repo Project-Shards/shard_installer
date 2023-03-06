@@ -20,6 +20,15 @@ from shard_installer.utils.command import Command
 from os.path import exists
 import os.makedirs
 import logging
+import logging.config
+import yaml
+
+with open("logging.yaml", "r") as f:
+    config = yaml.safe_load(f.read())
+    f.close()
+
+logging.config.dictConfig(config)
+logger=logging.getLogger("shard_logging")
 
 class FileUtils:
 
@@ -36,7 +45,7 @@ class FileUtils:
         content: str,
     ):
         if not exists(path):
-            logging.warn("File "+path+" doesn't exist! Creating file")
+            logger.warn("File "+path+" doesn't exist! Creating file")
             create_file(path)
         with open(path, 'a') as file:
             file.write(content)
@@ -47,7 +56,7 @@ class FileUtils:
         content: str,
     ):
         if not exists(path):
-            logging.warn("File "+path+" doesn't exist! Creatin file")
+            logger.warn("File "+path+" doesn't exist! Creatin file")
             create_file(path)
         with open(path, 'w') as file:
             file.write(content)
@@ -59,4 +68,4 @@ class FileUtils:
         if not exists(path):
             os.makedirs(path)
         else:
-            logging.warn("Directory "+path+" already exists!")
+            logger.warn("Directory "+path+" already exists!")

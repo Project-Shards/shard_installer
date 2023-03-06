@@ -17,7 +17,17 @@
 # SPDX-License-Identifier: GPL-3.0
 
 import subprocess
+import os
 import logging
+import logging.config
+import yaml
+
+with open("logging.yaml", "r") as f:
+    config = yaml.safe_load(f.read())
+    f.close()
+
+logging.config.dictConfig(config)
+logger=logging.getLogger("shard_logging")
 
 class Command:
     @staticmethod
@@ -27,18 +37,22 @@ class Command:
         crash: bool = False,
         workdir: str = "",
     ) -> [str, str, str]:
+        if os.environ.get("DEBUG") == "true":
+            logger.debug("Command: " + " ".join(command))
+            return [0, "", ""]
+
         out = subprocess.run(
             command,
             shell=True,
             capture_output=True,
-            cwd=workdir if workdir.strip() is not "" else None
+            cwd=workdir if workdir.strip() != "" else None
         )
         if out.returncode != 0 and command_description.strip() != "":
-            logging.error(command_description+" failed with returncode "+out.returncode)
+            logger.error(command_description+" failed with returncode "+out.returncode)
             if crash:
                 return out.returncode
         elif out.returncode != 0:
-            logging.error(command+" failed with returncode "+out.returncode)
+            logger.error(command+" failed with returncode "+out.returncode)
             if crash:
                 return out.returncode
 

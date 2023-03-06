@@ -19,46 +19,62 @@
 from shard_installer.utils.command import Command
 from shard_installer.utils.diskutils import DiskUtils
 import logging
+import logging.config
+import yaml
 
-partitions=[]
+with open("logging.yaml", "r") as f:
+    config = yaml.safe_load(f.read())
+    f.close()
 
-def start_partition(str: disk):
-    partition_disk(disk)
-    if "nvme" in disk:
-        partitions=[disk+"p1", disk+"p2"]
-        partition_nvme(disk)
-    else:
-        partitions=[disk+"1", disk+"2"]
-        partition_disk(disk)
+logging.config.dictConfig(config)
+logger=logging.getLogger("shard_logging")
 
-def partition_disk(str: disk):
-    logging.debug("Using "+disk)
-    Command.execute_command(command=["parted", "-s", disk, "mklabel", "gpt"], command_description="Create gpg label on "+disk, crash=True)
-    Command.execute_command(command=["parted", "-s", disk, "mkpart", "fat32", "0", "512M"], command_description="Create fat32 EFI partition on "+disk, crash=True)
-    Command.execute_command(command=["parted", "-s", disk, "mkpart", "btrfs", "512M", "100%"], command_description="Create Shard Linux Root partition on "+disk, crash=True)
+class Partition:
+    partitions=[]
 
-def part_nvme(str: disk):
-    logging.debug("Partitioning "+disk+" as nvme device")
-    Command.execute_command(command=["mkfs.vfat", "-F32", partitions[0]], command_description="Format "+partitions[0]+" as fat32", crash=True)
-    Command.execute_command(command=["mkfs.btrfs", "-f", partitions[1]], command_description="Format "+partitions[1]+" as btrfs", crash=True)
-    setup_volumes(disk=disk)
+    def __init__(self, disk: str):
+        self.disk = disk
+        print("Partitioning "+self.disk)
+        if "nvme" in disk:
+            self.partitions=[disk+"p1", disk+"p2"]
+        else:
+            self.partitions=[disk+"1", disk+"2"]
 
-def part_disk(str: disk):
-    logging.debug("Partitioning "+disk+" as non nvme block device")
-    Command.execute_command(command=["mkfs.vfat", "-F32", partitions[0]], command_description="Format "+partitions[0]+" as fat32", crash=True)
-    Command.execute_command(command=["mkfs.btrfs", "-f", partitions[1]], command_description="Format "+partitions[1]+" as btrfs", crash=True)
-    setup_volumes(disk=disk)
+    def start_partition(self):
+        self.partition_disk()
+        if "nvme" in self.disk:
+            self.partition_nvme()
+        else:
+            self.partition_disk()
+
+    def partition_disk(self):
+        logger.debug("Using "+self.disk)
+        Command.execute_command(command=["parted", "-s", self.disk, "mklabel", "gpt"], command_description="Create gpg label on "+self.disk, crash=True)
+        Command.execute_command(command=["parted", "-s", self.disk, "mkpart", "fat32", "0", "512M"], command_description="Create fat32 EFI partition on "+self.disk, crash=True)
+        Command.execute_command(command=["parted", "-s", self.disk, "mkpart", "btrfs", "512M", "100%"], command_description="Create Shard Linux Root partition on "+self.disk, crash=True)
+
+    def part_nvme(self):
+        logger.debug("Partitioning "+self.disk+" as nvme device")
+        Command.execute_command(command=["mkfs.vfat", "-F32", partitions[0]], command_description="Format "+partitions[0]+" as fat32", crash=True)
+        Command.execute_command(command=["mkfs.btrfs", "-f", partitions[1]], command_description="Format "+partitions[1]+" as btrfs", crash=True)
+        self.setup_volumes(disk=self.disk)
+
+    def part_disk(self):
+        logger.debug("Partitioning "+self.disk+" as non nvme block device")
+        Command.execute_command(command=["mkfs.vfat", "-F32", partitions[0]], command_description="Format "+partitions[0]+" as fat32", crash=True)
+        Command.execute_command(command=["mkfs.btrfs", "-f", partitions[1]], command_description="Format "+partitions[1]+" as btrfs", crash=True)
+        self.setup_volumes(disk=self.disk)
 
 
-def setup_volumes(str: disk):
-    logging.debug("Setting up shards on"+disk)
-    DiskUtils.mount(source=partitions[1], destination="/mnt")
-    Command.execute_command(command=["btrfs", "subvol", "create", "Root"], command_description="Create Root shard", crash=True, workdir="/mnt")
-    Command.execute_command(command=["btrfs", "subvol", "create", "System"], command_description="Create System shard", crash=True, workdir="/mnt")
-    Command.execute_command(command=["btrfs", "subvol", "create", "Data"], command_description="Create Data shard", crash=True, workdir="/mnt")
-    Command.execute_command(command=["btrfs", "subvol", "create", "Recovery"], command_description="Create Recovery shard", crash=True, workdir="/mnt")
-    Command.execute_command(command=["btrfs", "subvol", "create", "Desktop"], command_description="Create Desktop shard", crash=True, workdir="/mnt")
-    Command.execute_command(command=["btrfs", "subvol", "create", "Users"], command_description="Create Users shard", crash=True, workdir="/mnt")
-    DiskUtils.unmount("/mnt")
-    DiskUtils.mount(source=partitions[1], destination="/mnt", options="subvol=Root")
-    logging.debug("Installing base Root shard")
+    def setup_volumes(self):
+        logger.debug("Setting up shards on"+self.disk)
+        DiskUtils.mount(source=partitions[1], destination="/mnt")
+        Command.execute_command(command=["btrfs", "subvol", "create", "Root"], command_description="Create Root shard", crash=True, workdir="/mnt")
+        Command.execute_command(command=["btrfs", "subvol", "create", "System"], command_description="Create System shard", crash=True, workdir="/mnt")
+        Command.execute_command(command=["btrfs", "subvol", "create", "Data"], command_description="Create Data shard", crash=True, workdir="/mnt")
+        Command.execute_command(command=["btrfs", "subvol", "create", "Recovery"], command_description="Create Recovery shard", crash=True, workdir="/mnt")
+        Command.execute_command(command=["btrfs", "subvol", "create", "Desktop"], command_description="Create Desktop shard", crash=True, workdir="/mnt")
+        Command.execute_command(command=["btrfs", "subvol", "create", "Users"], command_description="Create Users shard", crash=True, workdir="/mnt")
+        DiskUtils.unmount("/mnt")
+        DiskUtils.mount(source=partitions[1], destination="/mnt", options="subvol=Root")
+        logger.debug("Installing base Root shard")

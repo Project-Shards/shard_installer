@@ -18,6 +18,15 @@
 
 from shard_installer.utils.command import Command
 import logging
+import logging.config
+import yaml
+
+with open("logging.yaml", "r") as f:
+    config = yaml.safe_load(f.read())
+    f.close()
+
+logging.config.dictConfig(config)
+logger=logging.getLogger("shard_logging")
 
 class DiskUtils:
 
@@ -29,18 +38,18 @@ class DiskUtils:
         options: list = [],
     ):
         if not bindmount and options == []:
-            logging.info("mounting "+source+" at "+destination)
+            logger.info("mounting "+source+" at "+destination)
             Command.execute_command(command=["mount", source, destination], command_description="Mount "+source+" at "+destination, check=True)
         elif not bindmount and not options == []:
-            logging.info("mounting "+source+" at "+destination+" with options "+" ".join(options))
+            logger.info("mounting "+source+" at "+destination+" with options "+" ".join(options))
             command = ["mount", partition, destination, "-o"]
             command.extend(options)
             Command.execute_command(command=command, command_description="Mount "+source+" at "+destination+" with options "+" ".join(options), check=True)
         elif bindmount and options == []:
-            logging.info("bind mounting "+source+" to "+destination)
+            logger.info("bind mounting "+source+" to "+destination)
             Command.execute_command(command=["mount", "--bind", source, destination])
         else:
-            logging.info("bind mounting "+source+" to "+destination+" with options "+" ".join(options))
+            logger.info("bind mounting "+source+" to "+destination+" with options "+" ".join(options))
             command = ["mount", "--bind", partition, destination, "-o"]
             command.extend(options)
             Command.execute_command(command=command, command_description="Bind mount "+source+" at "+destination+" with options "+" ".join(options), check=True)
@@ -56,3 +65,14 @@ class DiskUtils:
     def is_ssd(
         disk: str,
     ):
+        output = Command.execute_command(command=["lsblk", "-d", "-o", "rota", disk], command_description="Check if "+disk+" is an SSD")
+        output = output[1].split()
+        output = [x for x in output if "ROTA" not in x]
+
+        if len(output) > 0:
+            if output[0] == "0":
+                return True
+            else:
+                return False
+        logger.warn("Could not determine disk type of "+disk+" assuming HDD")
+        return False
