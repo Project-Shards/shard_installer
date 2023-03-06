@@ -19,16 +19,9 @@
 from shard_installer.utils.command import Command
 from shard_installer.utils.fileutils import FileUtils
 from shard_installer.utils.diskutils import DiskUtils
-import logging
-import logging.config
-import yaml
+from shard_installer.utils.log import setup_logging
+logger=setup_logging()
 
-with open("logging.yaml", "r") as f:
-    config = yaml.safe_load(f.read())
-    f.close()
-
-logging.config.dictConfig(config)
-logger=logging.getLogger("shard_logging")
 class Shards:
 
     @staticmethod

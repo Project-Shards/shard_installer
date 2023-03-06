@@ -6,6 +6,7 @@ shard_installer_sources = [
     'command.py',
     'diskutils.py',
     'fileutils.py',
+    'log.py'
 ]
 
 install_data(shard_installer_sources, install_dir: moduledir)

@@ -19,16 +19,8 @@
 from shard_installer.utils.command import Command
 from os.path import exists
 import os.makedirs
-import logging
-import logging.config
-import yaml
-
-with open("logging.yaml", "r") as f:
-    config = yaml.safe_load(f.read())
-    f.close()
-
-logging.config.dictConfig(config)
-logger=logging.getLogger("shard_logging")
+from shard_installer.utils.log import setup_logging
+logger=setup_logging()
 
 class FileUtils:
 
