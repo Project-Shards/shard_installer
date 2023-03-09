@@ -59,7 +59,7 @@ class Command:
     ) -> [str, str, str]:
         chroot_command = ["arch-chroot", root]
         chroot_command.extend(command)
-        return execute_command(
+        return Command.execute_command(
             command=chroot_command,
             command_description=command_description,
             crash=crash

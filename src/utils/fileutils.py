@@ -18,7 +18,7 @@
 
 from shard_installer.utils.command import Command
 from os.path import exists
-import os.makedirs
+import os
 from shard_installer.utils.log import setup_logging
 logger=setup_logging()
 
@@ -28,6 +28,9 @@ class FileUtils:
     def create_file(
         path: str,
     ):
+        if os.environ.get("DEBUG"):
+            logger.debug(f"Creating file {path}")
+            return
         file = open(path, 'x')
         file.close()
 
@@ -36,6 +39,9 @@ class FileUtils:
         path: str,
         content: str,
     ):
+        if os.environ.get("DEBUG"):
+            logger.debug(f"Appending {content} to file {path}")
+            return
         if not exists(path):
             logger.warn("File "+path+" doesn't exist! Creating file")
             create_file(path)
@@ -47,6 +53,9 @@ class FileUtils:
         path: str,
         content: str,
     ):
+        if os.environ.get("DEBUG"):
+            logger.debug(f"Writing {content} to file {path}")
+            return
         if not exists(path):
             logger.warn("File "+path+" doesn't exist! Creatin file")
             create_file(path)
@@ -57,6 +66,9 @@ class FileUtils:
     def create_directory(
         path: str,
     ):
+        if os.environ.get("DEBUG"):
+            logger.debug(f"Creating directory {path}")
+            return
         if not exists(path):
             os.makedirs(path)
         else:
@@ -68,6 +80,9 @@ class FileUtils:
         search: str,
         replace: str,
     ):
+        if os.environ.get("DEBUG"):
+            logger.debug(f"Replacing {search} with {replace} in file {path}")
+            return
         lines = []
         with open(path, 'r') as file:
             for line in file:

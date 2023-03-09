@@ -27,39 +27,41 @@ class Localization:
     def set_timezone(
         timezone: str,
     ):
-    Command.execute_chroot(
-        command=[
-            "ln",
-            "-s",
-            "/usr/share/zoneinfo/"+timezone,
-            "/etc/localtime"
-        ],
-        command_description="set timezone to "+timezone,
-        crash=False
-    )
-    Command.execute_chroot(
-        command=[
-            "hwclock",
-            "--systohc"
-        ],
-        command_description="run hwclock",
-        crash=False
-    )
+        Command.execute_chroot(
+            command=[
+                "ln",
+                "-s",
+                "/usr/share/zoneinfo/"+timezone,
+                "/etc/localtime"
+            ],
+            command_description="set timezone to "+timezone,
+            crash=False
+        )
+        Command.execute_chroot(
+            command=[
+                "hwclock",
+                "--systohc"
+            ],
+            command_description="run hwclock",
+            crash=False
+        )
 
     @staticmethod
     def enable_locales(
-        locales: list=["en_US.UTF-8"]
-        main_locale: str=""
+        locales: list=["en_US.UTF-8"],
+        main_locale: str = ""
     ):
         if main_locale.strip() == "":
-            main_locale=locales[0]
-        logging.info("Adding locales "+" ".join(locales))
-        logging.info("Setting "+main_locale+" main locale")
-        for i in range(0, len(locales)):
-            locales[i] = locales[i]+" "+locales[i].split(":")[1]
+            main_locale=locales[0].split(":")[0]
+        logger.info("Adding locales "+" ".join(locales))
+        logger.info("Setting "+main_locale+" main locale")
+        locale=""
+        for i in locales[0].split(":"): # For some reason click puts the whole args into the first area of a tuple and seperates them with a :
+            locale=locale+i+" "+i.split(".")[1]+"\n"
+        logger.info(locales)
         FileUtils.append_file(
             path="/etc/locale.gen",
-            content="\n".join(locales)
+            content=locale
         )
         Command.execute_chroot(
             command=[
@@ -68,7 +70,7 @@ class Localization:
             command_description="Generate locales",
             crash=False
         )
-        FileUtis.write_file(
+        FileUtils.write_file(
             path="/mnt/etc/locale.conf",
             content="LANG="+main_locale
         )

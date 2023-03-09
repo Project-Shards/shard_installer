@@ -25,20 +25,20 @@ class User:
 
     @staticmethod
     def create_user(
-        username: str = "user",
         password: str,
-        hasWheel: bool = True
+        username: str = "user",
+        hasWheel: bool = True,
     ):
-        password=hash_password(password)
+        password=User.hash_password(password)
         Command.execute_chroot(
             command=[
                 "useradd",
                 "-m",
-                "-p"
+                "-p",
                 password,
                 username
             ],
-            command_description="Add user "+user
+            command_description="Add user "+username,
             crash=True
         )
         if hasWheel:
@@ -49,7 +49,7 @@ class User:
                     "wheel",
                     username
                 ],
-                command_description="Add "+user+" to wheel group"
+                command_description="Add "+username+" to wheel group"
             )
             FileUtils.replace_file(
                 path="/mnt/etc/sudoers",
@@ -65,7 +65,7 @@ class User:
     def set_root_password(
         password: str
     ):
-        password=hash_password(password)
+        password=User.hash_password(password)
         Command.execute_chroot(
             command=[
                 "usermod",
@@ -82,6 +82,7 @@ class User:
     ) -> str:
         output = Command.execute_command(
             command=[
+                "openssl",
                 "passwd",
                 "-1",
                 password
@@ -89,4 +90,5 @@ class User:
             command_description="Encrypt password",
             crash=False,
         )
+        logger.debug(output)
         return output[1]

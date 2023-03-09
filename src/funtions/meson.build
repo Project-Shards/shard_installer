@@ -3,7 +3,10 @@ moduledir = join_paths(pkgdatadir, 'shard_installer/functions')
 
 shard_installer_sources = [
     '__init__.py',
-    'partition.py'
+    'partition.py',
+    'localization.py',
+    'shards.py',
+    'user.py'
 ]
 
 install_data(shard_installer_sources, install_dir: moduledir)

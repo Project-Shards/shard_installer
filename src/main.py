@@ -43,6 +43,7 @@ def main(verbose):
 @main.command()
 @click.option('--disk', prompt='Disk to partition', help='Disk to partition')
 def partition(disk):
+    """Partition the disk"""
     click.echo(disk)
     logger.info("Partitioning disk %s" % disk)
     partition=Partition(disk)
@@ -53,8 +54,9 @@ def partition(disk):
 @click.option('--password', prompt='Password', help='Password of the new user', hide_input=True, confirmation_prompt=True)
 @click.option('--sudoer', is_flag=True, help='Make the user a sudoer')
 def addUser(username, password, sudoer):
-    logger.info("Creating user "+user)
-    logger.info(user+"is sudoer" if user else "is not sudoer")
+    """Add a new user"""
+    logger.info("Creating user "+username)
+    logger.info(username+" is sudoer" if username else "is not sudoer")
     User.create_user(
         username=username,
         password=password,
@@ -64,23 +66,26 @@ def addUser(username, password, sudoer):
 @main.command()
 @click.option('--password', prompt='Password', help='Password of the root user', hide_input=True, confirmation_prompt=True)
 def setRootPass(password):
+    """Set the root password"""
     logger.info("Setting root password")
     User.set_root_password(
         password=password
     )
 
 @main.command()
-@click.option('--locales', help='Locales to enable', multiple=True)
+@click.option('--locales', help='Locales to enable sepearted with \':\'', multiple=True, default=["en_US.UTF-8"])
 @click.option('--mainLocale', help='Main locale', required=False, default="")
-def setLocales(locales, mainLocale):
+def setLocales(locales, mainlocale):
+    """Set the locales"""
     Localization.enable_locales(
         locales=locales,
-        main_locale=mainLocale
+        main_locale=mainlocale
     )
 
 @main.command()
 @click.option('--timezone', prompt=True, help='Timezone to use')
 def setTimezone(timezone):
+    """Set the timezone"""
     Localization.set_timezone(
         timezone=timezone
     )
