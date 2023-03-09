@@ -61,3 +61,18 @@ class FileUtils:
             os.makedirs(path)
         else:
             logger.warn("Directory "+path+" already exists!")
+
+    @staticmethod
+    def replace_file(
+        path: str,
+        search: str,
+        replace: str,
+    ):
+        lines = []
+        with open(path, 'r') as file:
+            for line in file:
+                line.replace(search, replace)
+                lines.append(line)
+        with open(path, 'w') as file:
+            for line in lines:
+                file.write(line)

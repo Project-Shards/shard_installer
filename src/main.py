@@ -18,6 +18,7 @@
 
 import click
 from shard_installer.functions.partition import Partition
+from shard_installer.functions.user import User
 import logging
 import logging.config
 import yaml
@@ -32,8 +33,6 @@ logger=logging.getLogger("shard_logging")
 @click.group()
 @click.option('--verbose', is_flag=True, help='Enables verbose mode.', default=False)
 def main(verbose):
-    """This statement prints Hello, World to your console"""
-    #click.echo("Hello, World")
     click.echo("Verbose mode is %s" % ('on' if verbose else 'off'))
     if verbose:
         logger.setLevel(logging.DEBUG)
@@ -43,8 +42,28 @@ def main(verbose):
 @main.command()
 @click.option('--disk', prompt='Disk to partition', help='Disk to partition')
 def partition(disk):
-    """This statement prints Hello, World to your console"""
     click.echo(disk)
     logger.info("Partitioning disk %s" % disk)
     partition=Partition(disk)
     partition.start_partition()
+
+@main.command()
+@click.option('--username', prompt='Username', help='Username of the new user')
+@click.option('--password', prompt='Password', help='Password of the new user')
+@click.option('--sudoer', is_flag=True, help='Make the user a sudoer')
+def addUser(username, password, sudoer):
+    logger.info("Creating user "+user)
+    logger.info(user+"is sudoer" if user else "is not sudoer")
+    User.create_user(
+        username=username,
+        password=password,
+        hasWheel=sudoer
+    )
+
+@main.command()
+@click.option('--password', prompt='Password', help='Password of the root user')
+def setRootPass(password):
+    logger.info("Setting root password")
+    User.set_root_password(
+        password=password
+    )
