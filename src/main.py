@@ -17,6 +17,7 @@
 # SPDX-License-Identifier: GPL-3.0
 
 import click
+from shard_installer.functions.localization import Localization
 from shard_installer.functions.partition import Partition
 from shard_installer.functions.user import User
 import logging
@@ -49,7 +50,7 @@ def partition(disk):
 
 @main.command()
 @click.option('--username', prompt='Username', help='Username of the new user')
-@click.option('--password', prompt='Password', help='Password of the new user')
+@click.option('--password', prompt='Password', help='Password of the new user', hide_input=True, confirmation_prompt=True)
 @click.option('--sudoer', is_flag=True, help='Make the user a sudoer')
 def addUser(username, password, sudoer):
     logger.info("Creating user "+user)
@@ -61,9 +62,25 @@ def addUser(username, password, sudoer):
     )
 
 @main.command()
-@click.option('--password', prompt='Password', help='Password of the root user')
+@click.option('--password', prompt='Password', help='Password of the root user', hide_input=True, confirmation_prompt=True)
 def setRootPass(password):
     logger.info("Setting root password")
     User.set_root_password(
         password=password
+    )
+
+@main.command()
+@click.option('--locales', help='Locales to enable', multiple=True)
+@click.option('--mainLocale', help='Main locale', required=False, default="")
+def setLocales(locales, mainLocale):
+    Localization.enable_locales(
+        locales=locales,
+        main_locale=mainLocale
+    )
+
+@main.command()
+@click.option('--timezone', prompt=True, help='Timezone to use')
+def setTimezone(timezone):
+    Localization.set_timezone(
+        timezone=timezone
     )
