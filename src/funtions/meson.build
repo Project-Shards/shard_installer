@@ -6,7 +6,8 @@ shard_installer_sources = [
     'partition.py',
     'localization.py',
     'shards.py',
-    'user.py'
+    'user.py',
+    'bootloader.py'
 ]
 
 install_data(shard_installer_sources, install_dir: moduledir)

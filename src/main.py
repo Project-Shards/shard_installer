@@ -21,6 +21,7 @@ from shard_installer.functions.localization import Localization
 from shard_installer.functions.partition import Partition
 from shard_installer.functions.user import User
 from shard_installer.functions.shards import Shards
+from shard_installer.functions.bootloader import Bootloader
 import logging
 import logging.config
 import yaml
@@ -50,6 +51,13 @@ def install(disk):
     partition=Partition(disk)
     partition.start_partition()
     Shards.install_shards(partition)
+
+@main.command()
+@click.option('--efidir', help='EFI directory in installation', default="/boot/efi")
+def bootloader(efidir):
+    """Install bootloader"""
+    logger.info("Installing bootloader")
+    Bootloader.install_bootloader(efidir)
 
 @main.command()
 @click.option('--username', prompt='Username', help='Username of the new user')

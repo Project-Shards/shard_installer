@@ -19,8 +19,8 @@
 from shard_installer.utils.command import Command
 from shard_installer.utils.fileutils import FileUtils
 from shard_installer.utils.diskutils import DiskUtils
-from shard_installer.utils.log import setup_logging
 from shard_installer.functions.partition import Partition
+from shard_installer.utils.log import setup_logging
 logger=setup_logging()
 
 class Shards:
