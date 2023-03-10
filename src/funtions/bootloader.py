@@ -26,6 +26,7 @@ class Bootloader:
     @staticmethod
     def install_bootloader(
         efidir: str,
+        bootloader_id: str = "SHARDS_SYSTEM",
     ):
         logger.info("Installing bootloader on efidir "+efidir)
         Command.execute_chroot(
@@ -33,7 +34,7 @@ class Bootloader:
                 "grub-install",
                 "--target=x86_64-efi",
                 "--efi-directory="+efidir,
-                "--bootloader-id=SHARDS_SYSTEM",
+                "--bootloader-id="+bootloader_id,
 
             ],
             command_description="Install grub bootloader",
@@ -44,7 +45,7 @@ class Bootloader:
                 "grub-install",
                 "--target=x86_64-efi",
                 "--efi-directory="+efidir,
-                "--bootloader-id=SHARDS_SYSTEM",
+                "--bootloader-id="+bootloader_id,
                 "--removable",
             ],
             command_description="Install grub bootloader as removable",

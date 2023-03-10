@@ -19,6 +19,7 @@
 from shard_installer.utils.command import Command
 from shard_installer.utils.fileutils import FileUtils
 from shard_installer.utils.diskutils import DiskUtils
+from shard_installer.functions.user import User
 from shard_installer.functions.partition import Partition
 from shard_installer.utils.log import setup_logging
 logger=setup_logging()
@@ -27,6 +28,12 @@ class Shards:
     @staticmethod
     def install_shards(partition: Partition):
         partitions=partition.partitions
+        DiskUtils.mount(source=partitions[1], destination="/mnt", options=["subvol=Recovery"])
+        FileUtils.create_directory("/mnt/boot/efi")
+        DiskUtils.mount(source=partitions[0], destination="/mnt/boot/efi")
+        Shards.setupRecovery(mountpoint="/mnt")
+        DiskUtils.unmount("/mnt/boot/efi")
+        DiskUtils.unmount("/mnt")
         DiskUtils.mount(source=partitions[1], destination="/mnt", options=["subvol=Root"])
         logger.debug("Installing base Root shard")
         Shards.setupRoot(mountpoint="/mnt", disks=partitions)
@@ -109,6 +116,80 @@ exec /Shards/System/sbin/init
         '''.format(partition2=disks[1], ssd=",ssd" if DiskUtils.is_ssd(disks[0]) else "")
         FileUtils.append_file("/mnt/init", init)
         Command.execute_command(command=["chmod", "+x", "/mnt/init"], command_description="Making init executable", crash=True)
+
+    @staticmethod
+    def setupRecovery(
+        mountpoint: str,
+    ):
+        Command.execute_command(
+            command=[
+                "pacstrap",
+                "-K",
+                mountpoint,
+                "linux",
+                "linux-firmware",
+                "networkmanager",
+                "btrfs-progs",
+                "grub",
+                "efibootmgr",
+                "systemd-sysvcompat",
+                "man-db",
+                "man-pages",
+                "texinfo",
+                "nano",
+                "sudo",
+                "curl",
+                "archlinux-keyring",
+                "which",
+                "base-devel",
+                "bash-completion",
+                "zsh-completions",
+                "gparted",
+                "ntfs-3g",
+                "dosfstools",
+                "exfat-utils",
+                "openssh"
+            ],
+            command_description="Install packages for recovery shard",
+            crash=True,
+        )
+        Command.execute_command(command=["genfstab", "-U", mountpoint, ">>", "/mnt/etc/fstab"], command_description="Generate fstab", crash=True)
+        Command.execute_command(command=["arch-chroot", mountpoint, "systemctl", "enable", "NetworkManager"], command_description="Enable NetworkManager", crash=True)
+        Command.execute_command(command=["arch-chroot", mountpoint, "systemctl", "enable", "sshd"], command_description="Enable sshd", crash=True)
+        User.create_user(password="recovery", username="recovery", hasWheel=True)
+        User.set_root_password(password="recovery")
+        Command.execute_chroot(
+            command=[
+                "grub-install",
+                "--target=x86_64-efi",
+                "--efi-directory=/boot/efi",
+                "--bootloader-id=SHARDS_RECOVERY",
+
+            ],
+            command_description="Install grub bootloader",
+            crash=True,
+        )
+        Command.execute_chroot(
+            command=[
+                "grub-install",
+                "--target=x86_64-efi",
+                "--efi-directory=/boot/efi",
+                "--bootloader-id=SHARDS_RECOVERY",
+                "--removable",
+            ],
+            command_description="Install grub bootloader as removable",
+            crash=True,
+        )
+        Command.execute_chroot(
+            command=[
+                "grub-mkconfig",
+                "-o",
+                "/boot/grub/grub.cfg",
+            ],
+            command_description="Generate grub config",
+            crash=True,
+        )
+
 
     @staticmethod
     def setupSystem(
