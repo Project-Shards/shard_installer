@@ -35,10 +35,10 @@ class Partition:
 
     def start_partition(self):
         self.partition_disk()
-        if "nvme" in self.disk:
-            self.partition_nvme()
+        if "nvme" in self.disk or "mmcblk" in self.disk:
+            self.part_nvme()
         else:
-            self.partition_disk()
+            self.part_disk()
 
     def partition_disk(self):
         logger.debug("Using "+self.disk)
@@ -48,20 +48,20 @@ class Partition:
 
     def part_nvme(self):
         logger.debug("Partitioning "+self.disk+" as nvme device")
-        Command.execute_command(command=["mkfs.vfat", "-F32", partitions[0]], command_description="Format "+partitions[0]+" as fat32", crash=True)
-        Command.execute_command(command=["mkfs.btrfs", "-f", partitions[1]], command_description="Format "+partitions[1]+" as btrfs", crash=True)
-        self.setup_volumes(disk=self.disk)
+        Command.execute_command(command=["mkfs.vfat", "-F32", self.partitions[0]], command_description="Format "+self.partitions[0]+" as fat32", crash=True)
+        Command.execute_command(command=["mkfs.btrfs", "-f", self.partitions[1]], command_description="Format "+self.partitions[1]+" as btrfs", crash=True)
+        self.setup_volumes()
 
     def part_disk(self):
         logger.debug("Partitioning "+self.disk+" as non nvme block device")
-        Command.execute_command(command=["mkfs.vfat", "-F32", partitions[0]], command_description="Format "+partitions[0]+" as fat32", crash=True)
-        Command.execute_command(command=["mkfs.btrfs", "-f", partitions[1]], command_description="Format "+partitions[1]+" as btrfs", crash=True)
-        self.setup_volumes(disk=self.disk)
+        Command.execute_command(command=["mkfs.vfat", "-F32", self.partitions[0]], command_description="Format "+self.partitions[0]+" as fat32", crash=True)
+        Command.execute_command(command=["mkfs.btrfs", "-f", self.partitions[1]], command_description="Format "+self.partitions[1]+" as btrfs", crash=True)
+        self.setup_volumes()
 
 
     def setup_volumes(self):
         logger.debug("Setting up shards on"+self.disk)
-        DiskUtils.mount(source=partitions[1], destination="/mnt")
+        DiskUtils.mount(source=self.partitions[1], destination="/mnt")
         Command.execute_command(command=["btrfs", "subvol", "create", "Root"], command_description="Create Root shard", crash=True, workdir="/mnt")
         Command.execute_command(command=["btrfs", "subvol", "create", "System"], command_description="Create System shard", crash=True, workdir="/mnt")
         Command.execute_command(command=["btrfs", "subvol", "create", "Data"], command_description="Create Data shard", crash=True, workdir="/mnt")
@@ -69,5 +69,3 @@ class Partition:
         Command.execute_command(command=["btrfs", "subvol", "create", "Desktop"], command_description="Create Desktop shard", crash=True, workdir="/mnt")
         Command.execute_command(command=["btrfs", "subvol", "create", "Users"], command_description="Create Users shard", crash=True, workdir="/mnt")
         DiskUtils.unmount("/mnt")
-        DiskUtils.mount(source=partitions[1], destination="/mnt", options="subvol=Root")
-        logger.debug("Installing base Root shard")

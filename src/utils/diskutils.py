@@ -31,27 +31,41 @@ class DiskUtils:
     ):
         if not bindmount and options == []:
             logger.info("mounting "+source+" at "+destination)
-            Command.execute_command(command=["mount", source, destination], command_description="Mount "+source+" at "+destination, check=True)
+            Command.execute_command(command=["mount", source, destination], command_description="Mount "+source+" at "+destination, crash=True)
         elif not bindmount and not options == []:
             logger.info("mounting "+source+" at "+destination+" with options "+" ".join(options))
-            command = ["mount", partition, destination, "-o"]
+            command = ["mount", source, destination, "-o"]
             command.extend(options)
-            Command.execute_command(command=command, command_description="Mount "+source+" at "+destination+" with options "+" ".join(options), check=True)
+            Command.execute_command(command=command, command_description="Mount "+source+" at "+destination+" with options "+" ".join(options), crash=True)
         elif bindmount and options == []:
             logger.info("bind mounting "+source+" to "+destination)
             Command.execute_command(command=["mount", "--bind", source, destination])
         else:
             logger.info("bind mounting "+source+" to "+destination+" with options "+" ".join(options))
-            command = ["mount", "--bind", partition, destination, "-o"]
+            command = ["mount", "--bind", source, destination, "-o"]
             command.extend(options)
-            Command.execute_command(command=command, command_description="Bind mount "+source+" at "+destination+" with options "+" ".join(options), check=True)
+            Command.execute_command(command=command, command_description="Bind mount "+source+" at "+destination+" with options "+" ".join(options), crash=True)
 
     @staticmethod
     def unmount(
         mountpoint: str,
     ):
-        Command.execute_command(command=["umount", mountopoint], command_description="Unmount "+mountpoint, check=True)
+        Command.execute_command(command=["umount", mountpoint], command_description="Unmount "+mountpoint, crash=True)
 
+
+    @staticmethod
+    def overlay_mount(
+        lowerdirs: list,
+        upperdir: str,
+        destination: str,
+        workdir: str,
+        options: list = [],
+    ):
+        command = ["mount", "-t", "overlay", "overlay"]
+        if len(options) > 0:
+            command.extend(["-o",",".join(options)])
+        command.extend(["-o", "lowerdir="+":".join(lowerdirs)+",upperdir="+upperdir+",workdir="+workdir+","+destination])
+        Command.execute_command(command=command, command_description="Mount overlay at "+destination, crash=True)
 
     @staticmethod
     def is_ssd(

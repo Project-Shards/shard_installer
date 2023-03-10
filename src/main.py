@@ -20,6 +20,7 @@ import click
 from shard_installer.functions.localization import Localization
 from shard_installer.functions.partition import Partition
 from shard_installer.functions.user import User
+from shard_installer.functions.shards import Shards
 import logging
 import logging.config
 import yaml
@@ -42,12 +43,13 @@ def main(verbose):
 
 @main.command()
 @click.option('--disk', prompt='Disk to partition', help='Disk to partition')
-def partition(disk):
-    """Partition the disk"""
+def install(disk):
+    """Install Project Shards, includes partitioning"""
     click.echo(disk)
     logger.info("Partitioning disk %s" % disk)
     partition=Partition(disk)
     partition.start_partition()
+    Shards.install_shards(partition)
 
 @main.command()
 @click.option('--username', prompt='Username', help='Username of the new user')
