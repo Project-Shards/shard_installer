@@ -60,6 +60,18 @@ class User:
                 path="/mnt/etc/sudoers",
                 content="\nDefaults pwfeedback\n"
             )
+        # usermod --add-subuids 100000-165535 --add-subgids 100000-165535
+        Command.execute_chroot(
+            command=[
+                "usermod",
+                "--add-subuids",
+                "100000-165535",
+                "--add-subgids",
+                "100000-165535",
+                username
+            ],
+            command_description="Add podman subuids and subgids to "+username
+        )
     
     @staticmethod
     def set_root_password(
