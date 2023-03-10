@@ -32,14 +32,21 @@ class Shards:
         Shards.setupRoot(mountpoint="/mnt", disks=partitions)
         logger.debug("Mounting Shards")
         FileUtils.create_directory("/mnt/Shards")
+        FileUtils.create_directory("/mnt/Shards/Users")
+        FileUtils.create_directory("/mnt/Shards/System")
+        FileUtils.create_directory("/mnt/Shards/Data")
+        FileUtils.create_directory("/mnt/Shards/Recovery")
+        FileUtils.create_directory("/mnt/Shards/System")
         DiskUtils.mount(source=partitions[1], destination="/mnt/Shards/Users", options=["subvol=Users"])
         DiskUtils.mount(source=partitions[1], destination="/mnt/Shards/System", options=["subvol=System"])
         DiskUtils.mount(source=partitions[1], destination="/mnt/Shards/Data", options=["subvol=Data"])
         DiskUtils.mount(source=partitions[1], destination="/mnt/Shards/Desktop", options=["subvol=Desktop"])
         DiskUtils.mount(source=partitions[1], destination="/mnt/Shards/Recovery", options=["subvol=Recovery"])
+        logger.debug("Installing Data shard")
+        Shards.setupData(mountpoint="/mnt/Shards/Data")
         logger.debug("Mounting Data etc at System etc")
         FileUtils.create_directory("/mnt/Shards/System/etc")
-        DiskUtils.mount(source="/mnt/Shards/Data/etc", destination="/mnt/Shards/etc", bindmount=True)
+        DiskUtils.mount(source="/mnt/Shards/Data/etc", destination="/mnt/Shards/System/etc", bindmount=True)
         logger.debug("Installing System shard")
         Shards.setupSystem(mountpoint="/mnt/Shards/System")
         logger.debug("Unmounting Data etc from System etc")
@@ -72,7 +79,7 @@ class Shards:
         DiskUtils.overlay_mount(lowerdirs=["/mnt/Shards/System/usr", "/mnt/Shards/Desktop/usr"], upperdir="/mnt/Shards/Data/usr", destination="/mnt/usr", workdir="/mnt/Shards/Data/tmp/usr")
         DiskUtils.overlay_mount(lowerdirs=["/mnt/Shards/System/var", "/mnt/Shards/Desktop/var"], upperdir="/mnt/Shards/Data/var", destination="/mnt/var", workdir="/mnt/Shards/Data/tmp/var")
         DiskUtils.overlay_mount(lowerdirs=["/mnt/Shards/System/opt", "/mnt/Shards/Desktop/opt"], upperdir="/mnt/Shards/Data/opt", destination="/mnt/opt", workdir="/mnt/Shards/Data/tmp/opt")
-
+        DiskUtils.mount(source="/mnt/Shards/Users", destination="/mnt/home", bindmount=True)
 
     @staticmethod
     def setupRoot(
@@ -101,6 +108,7 @@ echo -e "\\x1b[35;1m --STARTING PROJECT SHARD STAGE 2-- \\x1b[39m"
 exec /Shards/System/sbin/init
         '''.format(partition2=disks[1], ssd=",ssd" if DiskUtils.is_ssd(disks[0]) else "")
         FileUtils.append_file("/mnt/init", init)
+        Command.execute_command(command=["chmod", "+x", "/mnt/init"], command_description="Making init executable", crash=True)
 
     @staticmethod
     def setupSystem(
@@ -137,7 +145,7 @@ exec /Shards/System/sbin/init
             crash=True,
         )
 
-        Command.execute_command(
+        Command.execute_chroot(
             command=[
                 "systemctl",
                 "enable",
@@ -147,7 +155,7 @@ exec /Shards/System/sbin/init
             crash=False,
         )
 
-        Command.execute_command(
+        Command.execute_chroot(
             command=[
                 "systemctl",
                 "enable",
@@ -155,6 +163,11 @@ exec /Shards/System/sbin/init
             ],
             command_description="Enable bluetooth",
             crash=False,
+        )
+        FileUtils.replace_file(
+            file="/etc/mkinitcpio.conf",
+            search="MODULES=()",
+            replace="MODULES=(overlay)",
         )
 
     @staticmethod
@@ -185,7 +198,7 @@ exec /Shards/System/sbin/init
 
             ],
         )
-        Command.execute_command(
+        Command.execute_chroot(
             command=[
                 "systemctl",
                 "enable",

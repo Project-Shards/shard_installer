@@ -44,7 +44,7 @@ class FileUtils:
             return
         if not exists(path):
             logger.warn("File "+path+" doesn't exist! Creating file")
-            create_file(path)
+            FileUtils.create_file(path)
         with open(path, 'a') as file:
             file.write(content)
 
@@ -57,8 +57,8 @@ class FileUtils:
             logger.debug(f"Writing {content} to file {path}")
             return
         if not exists(path):
-            logger.warn("File "+path+" doesn't exist! Creatin file")
-            create_file(path)
+            logger.warn("File "+path+" doesn't exist! Creating file")
+            FileUtils.create_file(path)
         with open(path, 'w') as file:
             file.write(content)
 
@@ -80,14 +80,14 @@ class FileUtils:
         search: str,
         replace: str,
     ):
-        if os.environ.get("DEBUG"):
-            logger.debug(f"Replacing {search} with {replace} in file {path}")
-            return
-        lines = []
-        with open(path, 'r') as file:
-            for line in file:
-                line.replace(search, replace)
-                lines.append(line)
-        with open(path, 'w') as file:
-            for line in lines:
-                file.write(line)
+        logger.info(f"Replacing {search} with {replace} in file {path}")
+        Command.execute_command(
+            command=[
+                "sed",
+                "-i",
+                f"s/{search}/{replace}/g",
+                path,
+            ],
+            command_description="Replacing "+search+" with "+replace+" in file "+path,
+            crash=True,
+        )

@@ -64,7 +64,7 @@ class DiskUtils:
         command = ["mount", "-t", "overlay", "overlay"]
         if len(options) > 0:
             command.extend(["-o",",".join(options)])
-        command.extend(["-o", "lowerdir="+":".join(lowerdirs)+",upperdir="+upperdir+",workdir="+workdir+","+destination])
+        command.extend(["-o", "lowerdir="+":".join(lowerdirs)+",upperdir="+upperdir+",workdir="+workdir, destination])
         Command.execute_command(command=command, command_description="Mount overlay at "+destination, crash=True)
 
     @staticmethod
@@ -72,7 +72,7 @@ class DiskUtils:
         disk: str,
     ):
         output = Command.execute_command(command=["lsblk", "-d", "-o", "rota", disk], command_description="Check if "+disk+" is an SSD")
-        output = output[1].split()
+        output = output[1].decode("UTF-8").split()
         output = [x for x in output if "ROTA" not in x]
 
         if len(output) > 0:

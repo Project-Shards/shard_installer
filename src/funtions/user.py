@@ -35,7 +35,7 @@ class User:
                 "useradd",
                 "-m",
                 "-p",
-                password,
+                str(password),
                 username
             ],
             command_description="Add user "+username,
@@ -82,7 +82,7 @@ class User:
             command=[
                 "usermod",
                 "--password",
-                password
+                str(password)
             ],
             command_description="Set root password",
             crash=True
@@ -103,4 +103,4 @@ class User:
             crash=False,
         )
         logger.debug(output)
-        return output[1]
+        return output[1].decode("utf-8").strip()

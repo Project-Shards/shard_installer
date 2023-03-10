@@ -22,6 +22,7 @@ from shard_installer.functions.partition import Partition
 from shard_installer.functions.user import User
 from shard_installer.functions.shards import Shards
 from shard_installer.functions.bootloader import Bootloader
+from shard_installer.functions.hostname import Hostname
 import logging
 import logging.config
 import yaml
@@ -98,4 +99,12 @@ def setTimezone(timezone):
     """Set the timezone"""
     Localization.set_timezone(
         timezone=timezone
+    )
+
+@main.command()
+@click.option('--hostname', prompt=True, help='Hostname to use', default="projectshards")
+def setHostname(hostname):
+    """Set the hostname"""
+    Hostname.set_hostname(
+        hostname=hostname
     )

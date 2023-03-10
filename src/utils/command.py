@@ -18,6 +18,7 @@
 
 import subprocess
 import os
+import sys
 from shard_installer.utils.log import setup_logging
 logger=setup_logging()
 
@@ -35,18 +36,18 @@ class Command:
 
         out = subprocess.run(
             command,
-            shell=True,
+            #shell=True,
             capture_output=True,
             cwd=workdir if workdir.strip() != "" else None
         )
         if out.returncode != 0 and command_description.strip() != "":
-            logger.error(command_description+" failed with returncode "+out.returncode)
+            logger.error(command_description+" failed with returncode "+str(out.returncode))
             if crash:
-                return out.returncode
+                sys.exit(out.returncode)
         elif out.returncode != 0:
-            logger.error(command+" failed with returncode "+out.returncode)
+            logger.error(" ".join(command)+" failed with returncode "+str(out.returncode))
             if crash:
-                return out.returncode
+                sys.exit(out.returncode)
 
         return [out.returncode, out.stdout, out.stderr]
 

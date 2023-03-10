@@ -28,7 +28,7 @@ class Bootloader:
         efidir: str,
     ):
         logger.info("Installing bootloader on efidir "+efidir)
-        Command.execute_command(
+        Command.execute_chroot(
             command=[
                 "grub-install",
                 "--target=x86_64-efi",
@@ -39,7 +39,7 @@ class Bootloader:
             command_description="Install grub bootloader",
             crash=True,
         )
-        Command.execute_command(
+        Command.execute_chroot(
             command=[
                 "grub-install",
                 "--target=x86_64-efi",
@@ -51,11 +51,11 @@ class Bootloader:
             crash=True,
         )
         FileUtils.replace_file(
-            path="/etc/default/grub",
-            search="quie",
+            path="/mnt/etc/default/grub",
+            search="quiet",
             replace="quiet init=/init",
         )
-        Command.execute_command(
+        Command.execute_chroot(
             command=[
                 "grub-mkconfig",
                 "-o",
