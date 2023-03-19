@@ -28,30 +28,36 @@ class DiskUtils:
         destination: str,
         bindmount: bool = False,
         options: list = [],
+        crash: bool = True
     ):
         if not bindmount and options == []:
             logger.info("mounting "+source+" at "+destination)
-            Command.execute_command(command=["mount", source, destination], command_description="Mount "+source+" at "+destination, crash=True)
+            output=Command.execute_command(command=["mount", source, destination], command_description="Mount "+source+" at "+destination, crash=crash)
+            return output[0]
         elif not bindmount and not options == []:
             logger.info("mounting "+source+" at "+destination+" with options "+" ".join(options))
             command = ["mount", source, destination, "-o"]
             command.extend(options)
-            Command.execute_command(command=command, command_description="Mount "+source+" at "+destination+" with options "+" ".join(options), crash=True)
+            output=Command.execute_command(command=command, command_description="Mount "+source+" at "+destination+" with options "+" ".join(options), crash=crash)
+            return output[0]
         elif bindmount and options == []:
             logger.info("bind mounting "+source+" to "+destination)
-            Command.execute_command(command=["mount", "--bind", source, destination])
+            output=Command.execute_command(command=["mount", "--bind", source, destination], command_description="Bind mount "+source+"at "+destination, crash=crash)
+            return output[0]
         else:
             logger.info("bind mounting "+source+" to "+destination+" with options "+" ".join(options))
             command = ["mount", "--bind", source, destination, "-o"]
             command.extend(options)
-            Command.execute_command(command=command, command_description="Bind mount "+source+" at "+destination+" with options "+" ".join(options), crash=True)
+            output=Command.execute_command(command=command, command_description="Bind mount "+source+" at "+destination+" with options "+" ".join(options), crash=crash)
+            return output[0]
 
     @staticmethod
     def unmount(
         mountpoint: str,
+        crash: bool = True
     ):
-        Command.execute_command(command=["umount", mountpoint], command_description="Unmount "+mountpoint, crash=True)
-
+        output=Command.execute_command(command=["umount", mountpoint], command_description="Unmount "+mountpoint, crash=crash)
+        return output[0]
 
     @staticmethod
     def overlay_mount(
@@ -60,18 +66,20 @@ class DiskUtils:
         destination: str,
         workdir: str,
         options: list = [],
+        crash: bool = True
     ):
         command = ["mount", "-t", "overlay", "overlay"]
         if len(options) > 0:
             command.extend(["-o",",".join(options)])
         command.extend(["-o", "lowerdir="+":".join(lowerdirs)+",upperdir="+upperdir+",workdir="+workdir, destination])
-        Command.execute_command(command=command, command_description="Mount overlay at "+destination, crash=True)
+        output=Command.execute_command(command=command, command_description="Mount overlay at "+destination, crash=crash)
+        return output[0]
 
     @staticmethod
     def is_ssd(
         disk: str,
     ):
-        output = Command.execute_command(command=["lsblk", "-d", "-o", "rota", disk], command_description="Check if "+disk+" is an SSD")
+        output = Command.execute_command(command=["lsblk", "-d", "-o", "rota", disk], command_description="Check if "+disk+" is an SSD", crash=False)
         output = output[1].decode("UTF-8").split()
         output = [x for x in output if "ROTA" not in x]
 

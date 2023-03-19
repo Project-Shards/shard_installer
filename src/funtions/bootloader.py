@@ -27,9 +27,10 @@ class Bootloader:
     def install_bootloader(
         efidir: str,
         bootloader_id: str = "SHARDS_SYSTEM",
+        crash: bool = True,
     ):
         logger.info("Installing bootloader on efidir "+efidir)
-        Command.execute_chroot(
+        output=Command.execute_chroot(
             command=[
                 "grub-install",
                 "--target=x86_64-efi",
@@ -38,9 +39,11 @@ class Bootloader:
 
             ],
             command_description="Install grub bootloader",
-            crash=True,
+            crash=crash,
         )
-        Command.execute_chroot(
+        if output[0] != 0:
+            return 1
+        output=Command.execute_chroot(
             command=[
                 "grub-install",
                 "--target=x86_64-efi",
@@ -49,19 +52,26 @@ class Bootloader:
                 "--removable",
             ],
             command_description="Install grub bootloader as removable",
-            crash=True,
+            crash=crash,
         )
-        FileUtils.replace_file(
+        if output[0] != 0:
+            return 1
+        output=FileUtils.replace_file(
             path="/mnt/etc/default/grub",
             search="quiet",
             replace="quiet init=/init",
+            crash=crash
         )
-        Command.execute_chroot(
+        if output != 0:
+            return 1
+        output=Command.execute_chroot(
             command=[
                 "grub-mkconfig",
                 "-o",
                 "/boot/grub/grub.cfg",
             ],
             command_description="Generate grub config",
-            crash=True,
+            crash=crash,
         )
+        if output[0] != 0:
+            return 1
