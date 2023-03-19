@@ -24,6 +24,7 @@ from shard_installer.functions.shards import Shards
 from shard_installer.functions.bootloader import Bootloader
 from shard_installer.functions.hostname import Hostname
 from shard_installer.utils.log import setup_logging
+import logging
 logger=setup_logging()
 
 
