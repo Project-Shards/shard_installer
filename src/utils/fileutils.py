@@ -30,7 +30,8 @@ class FileUtils:
     ):
         if os.environ.get("DEBUG"):
             logger.debug(f"Creating file {path}")
-            return
+            if os.environ.get("SHARDS_FAKE"):
+                return
         file = open(path, 'x')
         file.close()
 
@@ -41,7 +42,8 @@ class FileUtils:
     ):
         if os.environ.get("DEBUG"):
             logger.debug(f"Appending {content} to file {path}")
-            return
+            if os.environ.get("SHARDS_FAKE"):
+                return
         if not exists(path):
             logger.warn("File "+path+" doesn't exist! Creating file")
             FileUtils.create_file(path)
@@ -55,7 +57,8 @@ class FileUtils:
     ):
         if os.environ.get("DEBUG"):
             logger.debug(f"Writing {content} to file {path}")
-            return
+            if os.environ.get("SHARDS_FAKE"):
+                return
         if not exists(path):
             logger.warn("File "+path+" doesn't exist! Creating file")
             FileUtils.create_file(path)
@@ -68,7 +71,8 @@ class FileUtils:
     ):
         if os.environ.get("DEBUG"):
             logger.debug(f"Creating directory {path}")
-            return
+            if os.environ.get("SHARDS_FAKE"):
+                return
         if not exists(path):
             os.makedirs(path)
         else:

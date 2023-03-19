@@ -23,16 +23,9 @@ from shard_installer.functions.user import User
 from shard_installer.functions.shards import Shards
 from shard_installer.functions.bootloader import Bootloader
 from shard_installer.functions.hostname import Hostname
-import logging
-import logging.config
-import yaml
+from shard_installer.utils.log import setup_logging
+logger=setup_logging()
 
-with open("logging.yaml", "r") as f:
-    config = yaml.safe_load(f.read())
-    f.close()
-
-logging.config.dictConfig(config)
-logger=logging.getLogger("shard_logging")
 
 @click.group()
 @click.option('--verbose', is_flag=True, help='Enables verbose mode.', default=False)

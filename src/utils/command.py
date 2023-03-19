@@ -30,9 +30,10 @@ class Command:
         crash: bool = False,
         workdir: str = "",
     ) -> [str, str, str]:
-        if os.environ.get("DEBUG") == "true":
+        if os.environ.get("DEBUG"):
             logger.debug("Command: " + " ".join(command))
-            return [0, "", ""]
+            if os.environ.get("SHARDS_FAKE"):
+                return [0, "", ""]
 
         out = subprocess.run(
             command,
