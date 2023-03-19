@@ -83,10 +83,9 @@ class FileUtils:
         path: str,
         search: str,
         replace: str,
-        crash: bool = True,
     ):
         logger.info(f"Replacing {search} with {replace} in file {path}")
-        output=Command.execute_command(
+        Command.execute_command(
             command=[
                 "sed",
                 "-i",
@@ -94,6 +93,5 @@ class FileUtils:
                 path,
             ],
             command_description="Replacing "+search+" with "+replace+" in file "+path,
-            crash=crash,
+            crash=True,
         )
-        return output[0]
